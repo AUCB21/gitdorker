@@ -1,13 +1,9 @@
 'use client'
 
-import dynamic from 'next/dynamic'
 import { useState } from 'react'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { VerifierTab } from '@/components/verifier/VerifierTab'
 import { KeysTab } from '@/components/keys/KeysTab'
-
-// xterm.js requires browser APIs — no SSR
-const TerminalTab = dynamic(() => import('@/components/terminal/TerminalTab').then((m) => m.TerminalTab), { ssr: false })
 
 export default function Home() {
   const [tab, setTab] = useState('verifier')
@@ -28,7 +24,7 @@ export default function Home() {
             <h1 className="text-2xl font-bold tracking-tight">
               gitdorker
               <span className="text-amber-500 text-sm ml-2 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 font-medium">
-                UI
+                v1.0
               </span>
             </h1>
             <p className="text-neutral-500 text-sm mt-1">Key verifier · gitdorker terminal · key vault</p>
@@ -39,9 +35,6 @@ export default function Home() {
           <TabsList className="bg-neutral-900 border border-neutral-800">
             <TabsTrigger value="verifier" className="data-[state=active]:bg-neutral-800">
               Verifier
-            </TabsTrigger>
-            <TabsTrigger value="terminal" className="data-[state=active]:bg-neutral-800">
-              Terminal
             </TabsTrigger>
             <TabsTrigger value="keys" className="data-[state=active]:bg-neutral-800">
               Keys
@@ -66,17 +59,13 @@ export default function Home() {
             </div>
           )}
 
-          <TabsContent value="verifier" className="mt-0">
+          <div className={tab !== 'verifier' ? 'hidden' : ''}>
             <VerifierTab onKeySaved={handleKeySaved} />
-          </TabsContent>
+          </div>
 
-          <TabsContent value="terminal" className="mt-0">
-            <TerminalTab />
-          </TabsContent>
-
-          <TabsContent value="keys" className="mt-0">
+          <div className={tab !== 'keys' ? 'hidden' : ''}>
             <KeysTab refreshSignal={keysRefresh} />
-          </TabsContent>
+          </div>
         </Tabs>
       </div>
     </div>

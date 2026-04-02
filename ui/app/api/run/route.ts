@@ -16,8 +16,15 @@ export async function POST(req: Request): Promise<Response> {
 
   const stream = new ReadableStream({
     start(controller) {
+      let closed = false
       function send(data: string) {
+        if (closed) return
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`))
+      }
+      function close() {
+        if (closed) return
+        closed = true
+        controller.close()
       }
 
       child.stdout.on('data', (chunk: Buffer) => send(chunk.toString()))
@@ -25,12 +32,12 @@ export async function POST(req: Request): Promise<Response> {
 
       child.on('close', (code) => {
         send(`\r\n[Process exited with code ${code}]\r\n`)
-        controller.close()
+        close()
       })
 
       child.on('error', (err) => {
         send(`\r\n[Error: ${err.message}]\r\n`)
-        controller.close()
+        close()
       })
     },
     cancel() {

@@ -7,19 +7,30 @@ import { KeysToolbar } from './KeysToolbar'
 import { getKeys, saveKeys, deleteKey } from '@/lib/storage'
 import type { Provider, VerifiedKey } from '@/types'
 
-// Minimal external store backed by localStorage
+// Stable empty array for the server snapshot — must be a fixed reference to avoid infinite loop
+const EMPTY_KEYS: VerifiedKey[] = []
+// Cached snapshot — useSyncExternalStore requires a stable reference between renders
+let cachedKeys: VerifiedKey[] = []
+function getSnapshot(): VerifiedKey[] {
+  const fresh = getKeys()
+  // Only replace reference when contents actually changed
+  if (JSON.stringify(fresh) !== JSON.stringify(cachedKeys)) cachedKeys = fresh
+  return cachedKeys
+}
+
 function subscribe(cb: () => void) {
   window.addEventListener('storage', cb)
   return () => window.removeEventListener('storage', cb)
 }
 
+function notifyStorage() {
+  cachedKeys = getKeys() // invalidate cache before notifying
+  window.dispatchEvent(new Event('storage'))
+}
+
 function useVaultKeys(): [VerifiedKey[], () => void] {
-  const keys = useSyncExternalStore(subscribe, getKeys, () => [])
-  function refresh() {
-    // Dispatch a synthetic storage event to re-run subscribers
-    window.dispatchEvent(new Event('storage'))
-  }
-  return [keys, refresh]
+  const keys = useSyncExternalStore(subscribe, getSnapshot, () => EMPTY_KEYS)
+  return [keys, notifyStorage]
 }
 
 // refreshSignal prop kept for API compatibility; vault auto-refreshes via useSyncExternalStore

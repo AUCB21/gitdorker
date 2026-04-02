@@ -19,17 +19,20 @@ const DOT: Record<PillState, string> = {
 interface Props {
   models: string[]
   states: Record<string, PillState>
+  errorMessages?: Record<string, string>
 }
 
-export function ModelPills({ models, states }: Props) {
+export function ModelPills({ models, states, errorMessages }: Props) {
   return (
     <div className="flex flex-wrap gap-2">
       {models.map((m) => {
         const state = states[m] ?? 'pending'
+        const errMsg = state === 'error' ? (errorMessages?.[m] ?? '') : undefined
         return (
           <span
             key={m}
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold transition-colors ${STYLES[state]}`}
+            title={errMsg}
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold transition-colors ${STYLES[state]}${errMsg ? ' cursor-help' : ''}`}
           >
             <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${DOT[state]}`} />
             {m}

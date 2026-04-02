@@ -14,12 +14,23 @@ export function findPython(): string {
   if (fs.existsSync(venvWin)) return venvWin
   if (fs.existsSync(venvUnix)) return venvUnix
 
-  // 3. System python3
-  try {
-    const which = execSync('which python3', { encoding: 'utf8' }).trim()
-    if (which) return which
-  } catch {}
+  // 3. System lookup — avoid Windows Store stubs (WindowsApps) which are fake launchers
+  const isStub = (p: string) => p.toLowerCase().includes('windowsapps')
 
-  // 4. Fallback: let the OS resolve it
-  return 'python3'
+  if (process.platform === 'win32') {
+    for (const cmd of ['where python', 'where py', 'where python3']) {
+      try {
+        const result = execSync(cmd, { encoding: 'utf8' }).trim().split('\n')[0].trim()
+        if (result && !isStub(result)) return result
+      } catch {}
+    }
+  } else {
+    try {
+      const result = execSync('which python3 || which python', { encoding: 'utf8' }).trim()
+      if (result && !isStub(result)) return result
+    } catch {}
+  }
+
+  // 4. Fallback: py launcher (Windows), then python3, then python
+  return process.platform === 'win32' ? 'py' : 'python3'
 }

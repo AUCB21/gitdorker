@@ -6,15 +6,29 @@ import { ModelPills, type PillState } from './ModelPills'
 import { ProviderBadge } from './ProviderBadge'
 import { ResultCard } from './ResultCard'
 import { detectProvider, PROVIDERS } from '@/lib/providers'
-import { CALLERS, withTimeout } from '@/lib/callers'
+import { CALLERS, withTimeout, timeoutForModel } from '@/lib/callers'
 import { shouldSkip } from '@/lib/placeholder'
 import { mergeKey } from '@/lib/storage'
 import type { Provider, VerifiedKey } from '@/types'
+
+const CONCURRENT_KEYS = 1
+
+async function runPool(tasks: (() => Promise<void>)[]): Promise<void> {
+  const queue = [...tasks]
+  const workers = Array.from({ length: Math.min(CONCURRENT_KEYS, queue.length) }, async () => {
+    while (queue.length > 0) {
+      const task = queue.shift()!
+      await task()
+    }
+  })
+  await Promise.all(workers)
+}
 
 interface KeyRunState {
   key: string
   provider: Provider
   pillStates: Record<string, PillState>
+  errorMessages: Record<string, string>
 }
 
 interface ResultEntry {
@@ -34,20 +48,27 @@ export function VerifierTab({ onKeySaved }: { onKeySaved?: () => void }) {
   const [results, setResults] = useState<ResultEntry[]>([])
   const [workingKeys, setWorkingKeys] = useState<VerifiedKey[]>([])
   const [savedCount, setSavedCount] = useState(0)
+  const [runningCount, setRunningCount] = useState(0)
+  const [completedCount, setCompletedCount] = useState(0)
   const abortRef = useRef<AbortController | null>(null)
 
   const detectedProvider = detectProvider(singleKey)
   const activeKeys = batchKeys.length > 0 ? batchKeys : [singleKey]
 
-  function setPillState(keyIdx: number, model: string, state: PillState) {
-    setRunStates((prev) => {
-      const next = [...prev]
-      next[keyIdx] = { ...next[keyIdx], pillStates: { ...next[keyIdx].pillStates, [model]: state } }
-      return next
-    })
+  function setPillState(apiKey: string, model: string, state: PillState, errorMessage?: string) {
+    setRunStates((prev) => prev.map((rs) => {
+      if (rs.key !== apiKey) return rs
+      return {
+        ...rs,
+        pillStates: { ...rs.pillStates, [model]: state },
+        errorMessages: errorMessage
+          ? { ...rs.errorMessages, [model]: errorMessage }
+          : rs.errorMessages,
+      }
+    }))
   }
 
-  async function runSingleKey(apiKey: string, keyIdx: number, signal: AbortSignal): Promise<string[]> {
+  async function runSingleKey(apiKey: string, signal: AbortSignal): Promise<string[]> {
     const provider = detectProvider(apiKey)
     if (!provider) return []
     const models = PROVIDERS[provider].models
@@ -57,12 +78,13 @@ export function VerifierTab({ onKeySaved }: { onKeySaved?: () => void }) {
       models.map(async (model) => {
         if (signal.aborted) return
         try {
-          const { text, tokens } = await withTimeout(CALLERS[provider](apiKey, model, prompt, maxTokens))
-          setPillState(keyIdx, model, 'success')
+          const { text, tokens } = await withTimeout(CALLERS[provider](apiKey, model, prompt, maxTokens), timeoutForModel(model))
+          setPillState(apiKey, model, 'success')
           setResults((prev) => [...prev, { apiKey, model, text, tokens }])
           succeeded.push(model)
         } catch (err) {
-          setPillState(keyIdx, model, shouldSkip(err) ? 'skipped' : 'error')
+          const errMsg = err instanceof Error ? err.message : String(err)
+          setPillState(apiKey, model, shouldSkip(err) ? 'skipped' : 'error', errMsg)
         }
       })
     )
@@ -78,35 +100,36 @@ export function VerifierTab({ onKeySaved }: { onKeySaved?: () => void }) {
     const { signal } = abortRef.current
 
     setRunning(true)
+    setRunningCount(keys.length)
+    setCompletedCount(0)
     setResults([])
     setWorkingKeys([])
     setSavedCount(0)
+    setRunStates([])
 
-    const initialStates: KeyRunState[] = keys.map((key) => {
-      const provider = detectProvider(key)
-      if (!provider) return null
-      const pillStates: Record<string, PillState> = {}
-      PROVIDERS[provider].models.forEach((m) => { pillStates[m] = 'pending' })
-      return { key, provider, pillStates }
-    }).filter(Boolean) as KeyRunState[]
+    await runPool(
+      keys.map((apiKey) => async () => {
+        if (signal.aborted) return
+        const provider = detectProvider(apiKey)
+        if (!provider) return
 
-    setRunStates(initialStates)
+        // Add this key's row the moment it starts — 1 row at a time
+        const pillStates: Record<string, PillState> = {}
+        PROVIDERS[provider].models.forEach((m) => { pillStates[m] = 'pending' })
+        setRunStates((prev) => [...prev, { key: apiKey, provider, pillStates, errorMessages: {} }])
 
-    const allWorking: VerifiedKey[] = []
+        const succeeded = await runSingleKey(apiKey, signal)
+        setCompletedCount((n) => n + 1)
 
-    for (let i = 0; i < keys.length; i++) {
-      if (signal.aborted) break
-      const apiKey = keys[i]
-      const provider = detectProvider(apiKey)
-      if (!provider) continue
-      const succeeded = await runSingleKey(apiKey, i, signal)
-      if (succeeded.length > 0) {
-        const entry: VerifiedKey = { key: apiKey, provider, models: succeeded, verifiedAt: new Date().toISOString() }
-        allWorking.push(entry)
-      }
-    }
-
-    setWorkingKeys(allWorking)
+        if (succeeded.length > 0) {
+          const entry: VerifiedKey = { key: apiKey, provider, models: succeeded, verifiedAt: new Date().toISOString() }
+          setWorkingKeys((prev) => prev.some((k) => k.key === apiKey) ? prev : [...prev, entry])
+        } else {
+          // Key had no working models — remove its row
+          setRunStates((prev) => prev.filter((rs) => rs.key !== apiKey))
+        }
+      })
+    )
     setRunning(false)
     abortRef.current = null
   }
@@ -217,7 +240,11 @@ export function VerifierTab({ onKeySaved }: { onKeySaved?: () => void }) {
                 disabled={running}
                 className="flex-1 bg-amber-500 hover:bg-amber-400 text-black font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-amber-500/10 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {running ? `Running…` : 'Run'}
+                {running
+                  ? runningCount > 1
+                    ? `${completedCount} / ${runningCount} keys · ${workingKeys.length} working`
+                    : 'Running…'
+                  : 'Run'}
               </button>
               {running && (
                 <button
@@ -230,15 +257,15 @@ export function VerifierTab({ onKeySaved }: { onKeySaved?: () => void }) {
             </div>
           </div>
 
-          {/* Model status */}
+          {/* Model status — grows one row at a time, failed keys drop out */}
           {runStates.length > 0 && (
             <div className="bg-[#121212] border border-neutral-800 rounded-xl p-5 space-y-3">
               {runStates.map((rs, i) => (
-                <div key={i} className={`space-y-2 ${i > 0 ? 'pt-2 border-t border-neutral-800' : ''}`}>
+                <div key={rs.key} className={`space-y-2 ${i > 0 ? 'pt-2 border-t border-neutral-800' : ''}`}>
                   {batchKeys.length > 1 && (
                     <span className="text-xs font-bold text-neutral-500 font-mono">{rs.key.slice(0, 32)}…</span>
                   )}
-                  <ModelPills models={PROVIDERS[rs.provider].models} states={rs.pillStates} />
+                  <ModelPills models={PROVIDERS[rs.provider].models} states={rs.pillStates} errorMessages={rs.errorMessages} />
                 </div>
               ))}
             </div>
@@ -256,7 +283,7 @@ export function VerifierTab({ onKeySaved }: { onKeySaved?: () => void }) {
       )}
 
       {/* No results message */}
-      {!running && runStates.length > 0 && results.length === 0 && (
+      {!running && completedCount > 0 && results.length === 0 && (
         <div className="text-red-400 text-sm font-medium bg-red-950/30 border border-red-900/50 p-4 rounded-xl text-center">
           No models returned a valid response.
         </div>
