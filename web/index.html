@@ -10,6 +10,7 @@
 
     body { background-color: #0a0a0a; color: #ededed; font-family: 'Inter', sans-serif; }
     .font-mono { font-family: 'JetBrains Mono', monospace; }
+
     .glass-panel { background: #121212; border: 1px solid #262626; border-radius: 12px; }
 
     .custom-scrollbar::-webkit-scrollbar { width: 6px; }
@@ -36,11 +37,9 @@
 
     .hidden { display: none !important; }
 
-    /* Tab styles */
     .tab-trigger {
       padding: 6px 16px; border-radius: 6px; font-size: 0.75rem; font-weight: 600;
       color: #737373; cursor: pointer; border: none; background: transparent; transition: all 0.15s;
-      position: relative;
     }
     .tab-trigger:hover { color: #ededed; }
     .tab-trigger.active { background: #262626; color: #ededed; }
@@ -48,20 +47,22 @@
 </head>
 <body class="p-4 md:p-8 min-h-screen">
 
-<div class="max-w-7xl mx-auto space-y-6">
+<div class="max-w-6xl mx-auto space-y-6">
 
   <!-- Header -->
-  <header class="border-b border-neutral-800 pb-6">
-    <h1 class="text-2xl font-bold tracking-tight">
-      gitdorker
-      <span class="text-amber-500 text-sm ml-2 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 font-medium">v1.0</span>
-    </h1>
-    <p class="text-neutral-500 text-sm mt-1">Key verifier · key vault</p>
+  <header class="border-b border-neutral-800 pb-6 flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold tracking-tight">
+        gitdorker
+        <span class="text-amber-500 text-sm ml-2 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 font-medium">v1.0</span>
+      </h1>
+      <p class="text-neutral-500 text-sm mt-1">Key verifier · key vault</p>
+    </div>
   </header>
 
   <!-- Tabs -->
   <div>
-    <div class="bg-neutral-900 border border-neutral-800 rounded-lg p-1 inline-flex gap-1 mb-6">
+    <div class="bg-neutral-900 border border-neutral-800 rounded-lg p-1 inline-flex gap-1 mb-4">
       <button class="tab-trigger active" data-tab="verifier" onclick="switchTab('verifier')">Verifier</button>
       <button class="tab-trigger" data-tab="keys" onclick="switchTab('keys')">
         Keys
@@ -79,65 +80,62 @@
     <div id="tab-verifier">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-        <!-- Config sidebar -->
+        <!-- Config Sidebar -->
         <aside class="lg:col-span-4 space-y-4">
           <div class="glass-panel p-5 space-y-5">
-            <h2 class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Configuration</h2>
+            <h2 class="text-xs font-bold text-neutral-400 uppercase tracking-widest">Configuration</h2>
 
-            <!-- API Key -->
-            <div class="space-y-1.5 relative">
-              <label class="text-[10px] font-bold text-neutral-500 uppercase tracking-wide block">API Key</label>
-              <input id="apikey" type="password" placeholder="sk-ant-… / sk-proj-… / AIza… / pplx-…" autocomplete="off"
-                class="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2.5 text-sm focus:border-amber-500 outline-none transition-colors font-mono pr-24" />
-              <div id="provider-badge" class="hidden absolute right-2 top-[28px] badge"></div>
-            </div>
+            <div class="space-y-4">
+              <!-- API Key -->
+              <div class="space-y-1.5 relative">
+                <label class="text-[10px] font-bold text-neutral-500 uppercase tracking-wide">API Key</label>
+                <input id="apikey" type="password" placeholder="sk-ant-… / sk-proj-… / AIza… / pplx-…" autocomplete="off"
+                  class="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2.5 text-sm focus:border-amber-500 outline-none transition-colors font-mono pr-24" />
+                <div id="provider-badge" class="hidden absolute right-2 top-[28px] badge"></div>
+              </div>
 
-            <!-- Max Tokens -->
-            <div class="space-y-1.5">
-              <label class="text-[10px] font-bold text-neutral-500 uppercase tracking-wide block">Max Tokens</label>
-              <input id="max-tokens" type="number" value="1024" min="1" max="8192"
-                class="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2.5 text-sm focus:border-amber-500 outline-none transition-colors font-mono" />
-            </div>
+              <!-- Max Tokens -->
+              <div class="space-y-1.5">
+                <label class="text-[10px] font-bold text-neutral-500 uppercase tracking-wide">Max Tokens</label>
+                <input id="max-tokens" type="number" value="1024" min="1" max="8192"
+                  class="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2.5 text-sm focus:border-amber-500 outline-none transition-colors font-mono" />
+              </div>
 
-            <!-- Drop Zone -->
-            <div class="space-y-1.5">
-              <label class="text-[10px] font-bold text-neutral-500 uppercase tracking-wide block">Batch Keys (keys.json)</label>
-              <div id="drop-zone"
-                class="border-2 border-dashed border-neutral-800 rounded-xl p-4 text-center cursor-pointer hover:border-neutral-600 hover:bg-neutral-900/50 transition-all relative group">
-                <input id="batch-file" type="file" accept=".json" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
-                <div class="text-2xl mb-1 opacity-70 group-hover:opacity-100 transition-opacity pointer-events-none">📂</div>
-                <p class="text-xs text-neutral-500 font-medium pointer-events-none" id="dz-label">Drop JSON or click to browse</p>
-                <div class="mt-2 flex items-center justify-center gap-2 pointer-events-none">
-                  <span id="dz-chip" class="hidden bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider"></span>
-                  <button id="dz-clear" type="button"
-                    class="hidden text-neutral-500 hover:text-red-400 p-1 bg-neutral-900 rounded-md transition-colors z-10 pointer-events-auto">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
-                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
-                    </svg>
-                  </button>
+              <!-- Drop Zone -->
+              <div class="space-y-1.5">
+                <label class="text-[10px] font-bold text-neutral-500 uppercase tracking-wide">Batch Keys (keys.json)</label>
+                <div id="drop-zone" class="border-2 border-dashed border-neutral-800 rounded-xl p-4 text-center cursor-pointer hover:border-neutral-600 hover:bg-neutral-900/50 transition-all relative group">
+                  <input id="batch-file" type="file" accept=".json" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
+                  <div class="text-2xl mb-1 opacity-70 group-hover:opacity-100 transition-opacity pointer-events-none">📂</div>
+                  <p class="text-xs text-neutral-500 font-medium pointer-events-none" id="dz-label">Drop JSON or click</p>
+                  <div class="mt-2 flex items-center justify-center gap-2 pointer-events-none">
+                    <span id="dz-chip" class="hidden bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider"></span>
+                    <button id="dz-clear" type="button" class="hidden text-neutral-500 hover:text-red-400 p-1 bg-neutral-900 rounded-md transition-colors z-10 pointer-events-auto">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- Working Keys panel -->
-          <div id="working-keys-panel" class="hidden glass-panel p-5 space-y-3">
-            <h2 class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Working Keys</h2>
+          <div id="download-wrap" class="glass-panel p-5 hidden flex-col gap-3">
             <div id="action-btns" class="flex flex-col gap-2"></div>
+            <div id="keys-panel" class="bg-neutral-950 border border-neutral-800 rounded-lg p-3 font-mono text-[10px] text-emerald-400 overflow-y-auto max-h-48 hidden flex-col gap-1"></div>
           </div>
         </aside>
 
-        <!-- Main workspace -->
+        <!-- Main Workspace -->
         <main class="lg:col-span-8 space-y-6">
-          <div class="glass-panel p-6">
-            <label class="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-2 block">Prompt</label>
+          <div class="glass-panel p-6 shadow-xl flex flex-col h-auto">
+            <label class="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 block">Prompt</label>
             <textarea id="prompt" placeholder="Enter your instructions here…"
               class="w-full min-h-[160px] bg-neutral-900 border border-neutral-800 rounded-xl p-4 text-sm focus:border-amber-500 outline-none transition-all resize-y custom-scrollbar leading-relaxed"></textarea>
             <div class="mt-4 flex gap-3">
               <button id="run-btn" type="button" onclick="runPrompt()"
                 class="flex-1 bg-amber-500 hover:bg-amber-400 text-black font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-amber-500/10 disabled:opacity-50 disabled:cursor-not-allowed">
-                Run
+                Execute Benchmark
               </button>
               <button id="stop-btn" type="button" onclick="stopRun()"
                 class="hidden px-5 bg-red-900/40 hover:bg-red-900/70 text-red-400 border border-red-800/60 font-bold py-3.5 rounded-xl transition-all">
@@ -146,27 +144,23 @@
             </div>
           </div>
 
-          <!-- Model status rows -->
-          <div id="model-status" class="hidden glass-panel p-5 space-y-3"></div>
+          <div id="model-status" class="glass-panel p-5 space-y-3 hidden flex-col"></div>
         </main>
       </div>
 
-      <!-- Results grid -->
-      <div id="results" class="mt-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+      <!-- Results -->
+      <div id="results" class="mt-6 space-y-4"></div>
     </div>
 
     <!-- Keys tab -->
     <div id="tab-keys" class="hidden">
-      <!-- Empty state -->
       <div id="keys-empty" class="hidden text-center py-20 text-neutral-600">
         <div class="text-4xl mb-3">🔑</div>
         <p class="text-sm font-medium">No keys in vault yet.</p>
         <p class="text-xs mt-1">Run the Verifier and click "Save to vault", or import a JSON file.</p>
       </div>
 
-      <!-- Toolbar + table -->
       <div id="keys-content" class="space-y-4">
-        <!-- Toolbar -->
         <div class="flex flex-wrap gap-3 items-center">
           <input id="keys-search" type="text" placeholder="Search keys…" oninput="renderKeysTable()"
             class="bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-sm font-mono text-neutral-300 focus:border-amber-500 outline-none transition-colors w-56" />
@@ -183,7 +177,6 @@
           </div>
         </div>
 
-        <!-- Table -->
         <div class="glass-panel overflow-hidden">
           <table class="w-full text-sm">
             <thead>
@@ -204,20 +197,16 @@
 </div>
 
 <script type="module">
-  // ── Providers ───────────────────────────────────────────────────────────────
+  const API_TIMEOUT_MS = 60000;
+
   const PROVIDERS = {
     anthropic: {
       label: 'Anthropic',
       detect: k => k.startsWith('sk-ant-'),
       models: [
-        'claude-opus-4-6',
-        'claude-sonnet-4-6',
-        'claude-haiku-4-5-20251001',
-        'claude-3-5-sonnet-20241022',
-        'claude-3-5-haiku-20241022',
-        'claude-3-opus-20240229',
-        'claude-3-sonnet-20240229',
-        'claude-3-haiku-20240307',
+        'claude-opus-4-6', 'claude-sonnet-4-6', 'claude-haiku-4-5-20251001',
+        'claude-3-5-sonnet-20241022', 'claude-3-5-haiku-20241022',
+        'claude-3-opus-20240229', 'claude-3-sonnet-20240229', 'claude-3-haiku-20240307',
       ],
     },
     openai: {
@@ -225,25 +214,19 @@
       detect: k => k.startsWith('sk-proj-') || k.startsWith('sk-'),
       models: ['gpt-4o', 'gpt-4o-mini', 'o3', 'o3-mini', 'o1', 'o1-mini', 'gpt-4-turbo', 'gpt-3.5-turbo'],
     },
-    google: {
-      label: 'Gemini',
-      detect: k => k.startsWith('AIza'),
-      models: [
-        'gemini-2.5-flash',
-        'gemini-2.5-flash-lite',
-        'gemini-2.5-pro',
-        'gemini-3.1-pro-preview',
-        'gemini-3-flash-preview',
-        'gemini-3.1-flash-lite-preview',
-        'gemini-2.0-flash',
-        'gemini-2.0-flash-lite',
-        'gemini-1.5-pro',
-      ],
-    },
     perplexity: {
       label: 'Perplexity',
       detect: k => k.startsWith('pplx-'),
       models: ['sonar', 'sonar-pro', 'sonar-reasoning-pro', 'sonar-deep-research'],
+    },
+    google: {
+      label: 'Gemini',
+      detect: k => k.startsWith('AIza'),
+      models: [
+        'gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.5-pro',
+        'gemini-3.1-pro-preview', 'gemini-3-flash-preview', 'gemini-3.1-flash-lite-preview',
+        'gemini-2.0-flash', 'gemini-2.0-flash-lite', 'gemini-1.5-pro',
+      ],
     },
   };
 
@@ -258,8 +241,7 @@
 
   // ── Timeouts ─────────────────────────────────────────────────────────────
   const MODEL_TIMEOUTS = { o3: 90_000, o1: 90_000, 'sonar-deep-research': 90_000, 'sonar-reasoning-pro': 45_000, 'o3-mini': 45_000, 'o1-mini': 45_000 };
-  const DEFAULT_TIMEOUT_MS = 45_000;
-  function timeoutForModel(m) { return MODEL_TIMEOUTS[m] ?? DEFAULT_TIMEOUT_MS; }
+  function timeoutForModel(m) { return MODEL_TIMEOUTS[m] ?? API_TIMEOUT_MS; }
 
   function withTimeout(promise, ms) {
     let id;
@@ -270,10 +252,7 @@
   async function withRetry(fn, delayMs = 5_000) {
     try { return await fn(); }
     catch (err) {
-      if ((err.status ?? 0) === 429) {
-        await new Promise(r => setTimeout(r, delayMs));
-        return fn();
-      }
+      if ((err.status ?? 0) === 429) { await new Promise(r => setTimeout(r, delayMs)); return fn(); }
       throw err;
     }
   }
@@ -286,7 +265,7 @@
     return /"code":\s*(404|429)/.test(msg) || /NOT_FOUND|RESOURCE_EXHAUSTED/.test(msg);
   }
 
-  // ── Provider callers (esm.sh) ────────────────────────────────────────────
+  // ── Provider callers ─────────────────────────────────────────────────────
   async function callAnthropic(apiKey, model, prompt, maxTok) {
     const { default: Anthropic } = await import('https://esm.sh/@anthropic-ai/sdk@0.40.0');
     const client = new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
@@ -324,60 +303,42 @@
     try { return JSON.parse(localStorage.getItem(VAULT_KEY) ?? '[]'); }
     catch { return []; }
   }
-
-  function saveKeys(keys) {
-    localStorage.setItem(VAULT_KEY, JSON.stringify(keys));
-  }
-
+  function saveKeys(keys) { localStorage.setItem(VAULT_KEY, JSON.stringify(keys)); }
   function mergeKey(incoming) {
     const keys = getKeys();
     const idx = keys.findIndex(k => k.key === incoming.key);
     if (idx >= 0) {
       incoming.models.forEach(m => { if (!keys[idx].models.includes(m)) keys[idx].models.push(m); });
       keys[idx].verifiedAt = incoming.verifiedAt;
-    } else {
-      keys.push(incoming);
-    }
+    } else { keys.push(incoming); }
     saveKeys(keys);
   }
-
-  function deleteVaultKey(key) {
-    saveKeys(getKeys().filter(k => k.key !== key));
-  }
+  function deleteVaultKey(key) { saveKeys(getKeys().filter(k => k.key !== key)); }
 
   // ── Tab switching ────────────────────────────────────────────────────────
   window.switchTab = function(tab) {
-    document.querySelectorAll('.tab-trigger').forEach(el => {
-      el.classList.toggle('active', el.dataset.tab === tab);
-    });
+    document.querySelectorAll('.tab-trigger').forEach(el => el.classList.toggle('active', el.dataset.tab === tab));
     document.getElementById('tab-verifier').classList.toggle('hidden', tab !== 'verifier');
     document.getElementById('tab-keys').classList.toggle('hidden', tab !== 'keys');
-    if (tab === 'keys') {
-      document.getElementById('saved-banner').classList.add('hidden');
-      renderKeysTab();
-    }
+    if (tab === 'keys') { document.getElementById('saved-banner').classList.add('hidden'); renderKeysTab(); }
   };
 
-  // ── Provider badge (verifier) ────────────────────────────────────────────
+  // ── Provider badge ───────────────────────────────────────────────────────
   const badgeEl  = document.getElementById('provider-badge');
   const apikeyEl = document.getElementById('apikey');
 
   function updateBadge(key) {
     const p = detectProvider(key);
-    if (p) {
-      badgeEl.textContent = PROVIDERS[p].label;
-      badgeEl.className = `absolute right-2 top-[28px] badge badge-${p}`;
-    } else {
-      badgeEl.className = 'hidden';
-    }
+    if (p) { badgeEl.textContent = PROVIDERS[p].label; badgeEl.className = `absolute right-2 top-[28px] badge badge-${p}`; }
+    else { badgeEl.className = 'hidden'; }
   }
   apikeyEl.addEventListener('input', () => updateBadge(apikeyEl.value.trim()));
 
   // ── Batch key loading ────────────────────────────────────────────────────
   let batchKeys = [];
-  const dzLabel  = document.getElementById('dz-label');
-  const dzChip   = document.getElementById('dz-chip');
-  const dzClear  = document.getElementById('dz-clear');
+  const dzLabel   = document.getElementById('dz-label');
+  const dzChip    = document.getElementById('dz-chip');
+  const dzClear   = document.getElementById('dz-clear');
   const batchFile = document.getElementById('batch-file');
 
   async function loadKeysFile(file) {
@@ -399,13 +360,10 @@
   }
 
   function clearDropZone() {
-    batchKeys = [];
-    batchFile.value = '';
-    dzLabel.textContent = 'Drop JSON or click to browse';
-    dzChip.classList.add('hidden');
-    dzClear.classList.add('hidden');
-    apikeyEl.value = '';
-    updateBadge('');
+    batchKeys = []; batchFile.value = '';
+    dzLabel.textContent = 'Drop JSON or click';
+    dzChip.classList.add('hidden'); dzClear.classList.add('hidden');
+    apikeyEl.value = ''; updateBadge('');
   }
 
   batchFile.addEventListener('change', e => loadKeysFile(e.target.files[0]));
@@ -415,59 +373,24 @@
   dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('border-neutral-500', 'bg-neutral-900/50'); });
   dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-neutral-500', 'bg-neutral-900/50'));
   dropZone.addEventListener('drop', e => {
-    e.preventDefault();
-    dropZone.classList.remove('border-neutral-500', 'bg-neutral-900/50');
-    const file = e.dataTransfer.files[0];
-    if (file) loadKeysFile(file);
+    e.preventDefault(); dropZone.classList.remove('border-neutral-500', 'bg-neutral-900/50');
+    const file = e.dataTransfer.files[0]; if (file) loadKeysFile(file);
   });
 
-  // ── Concurrency pool ─────────────────────────────────────────────────────
-  const CONCURRENT_KEYS = 1;
+  // ── State ───────────────────────────────────────────────────────────────────
+  let workingKeys = [];
 
-  async function runPool(tasks) {
-    const queue = [...tasks];
-    const workers = Array.from({ length: Math.min(CONCURRENT_KEYS, queue.length) }, async () => {
-      while (queue.length > 0) {
-        const task = queue.shift();
-        await task();
-      }
-    });
-    await Promise.all(workers);
-  }
-
-  // ── Verifier state ───────────────────────────────────────────────────────
-  let verifierWorkingKeys = [];
-  let abortController    = null;
-  let savedCount         = 0;
-
-  window.stopRun = function() {
-    if (abortController) abortController.abort();
-  };
-
-  // ── UI helpers ───────────────────────────────────────────────────────────
   function escapeHtml(s) {
     return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
-  function makePillEl(model) {
-    const el = document.createElement('span');
-    el.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold transition-colors bg-neutral-900 border-neutral-800 text-neutral-400';
-    el.innerHTML = `<span class="status-dot dot-pending"></span>${escapeHtml(model)}`;
-    return el;
-  }
-
-  function setPillState(pillEl, state, errMsg) {
-    const dot = pillEl.querySelector('.status-dot');
-    if (state === 'success') {
-      pillEl.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold transition-colors bg-emerald-950 border-emerald-900 text-emerald-400';
-      dot.className = 'status-dot dot-success';
-    } else if (state === 'skipped') {
-      pillEl.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold transition-colors bg-neutral-900 border-neutral-800 text-neutral-500';
-      dot.className = 'status-dot dot-skipped';
+  function mergeWorkingKey(key, succeededModels) {
+    const provider = detectProvider(key);
+    const existing = workingKeys.find(e => e.key === key);
+    if (existing) {
+      succeededModels.forEach(m => { if (!existing.models.includes(m)) existing.models.push(m); });
     } else {
-      pillEl.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold transition-colors bg-red-950 border-red-900 text-red-400 cursor-help';
-      dot.className = 'status-dot dot-error';
-      if (errMsg) pillEl.title = errMsg;
+      workingKeys.push({ key, provider, models: [...succeededModels], verifiedAt: new Date().toISOString() });
     }
   }
 
@@ -486,169 +409,203 @@
     document.getElementById('results').appendChild(card);
   }
 
-  function renderWorkingKeysPanel() {
-    const panel   = document.getElementById('working-keys-panel');
-    const btnRow  = document.getElementById('action-btns');
+  function renderDownloadButton() {
+    const wrap   = document.getElementById('download-wrap');
+    const btnRow = document.getElementById('action-btns');
+    const panel  = document.getElementById('keys-panel');
+
     btnRow.innerHTML = '';
+    panel.innerHTML  = '';
+    panel.classList.add('hidden');
 
-    if (verifierWorkingKeys.length === 0) {
-      panel.classList.add('hidden');
-      return;
-    }
-    panel.classList.remove('hidden');
+    if (workingKeys.length === 0) { wrap.classList.replace('flex', 'hidden'); return; }
+    wrap.classList.replace('hidden', 'flex');
 
-    const kCount = verifierWorkingKeys.length;
+    const kCount = workingKeys.length;
 
     const dlBtn = document.createElement('button');
     dlBtn.type = 'button';
     dlBtn.className = 'w-full bg-emerald-900/30 text-emerald-400 border border-emerald-800 rounded-lg py-2 text-xs font-bold hover:bg-emerald-900/50 transition-colors';
-    dlBtn.textContent = `Download ${kCount} key${kCount > 1 ? 's' : ''} (JSON)`;
+    dlBtn.textContent = `Download ${kCount} working key${kCount > 1 ? 's' : ''} (JSON)`;
     dlBtn.onclick = () => {
-      const blob = new Blob([JSON.stringify(verifierWorkingKeys, null, 2)], { type: 'application/json' });
+      const blob = new Blob([JSON.stringify(workingKeys, null, 2)], { type: 'application/json' });
       const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: 'working_keys.json' });
-      a.click();
-      URL.revokeObjectURL(a.href);
+      a.click(); URL.revokeObjectURL(a.href);
     };
 
+    const showBtn = document.createElement('button');
+    showBtn.type = 'button';
+    showBtn.className = 'w-full bg-blue-900/30 text-blue-400 border border-blue-800 rounded-lg py-2 text-xs font-bold hover:bg-blue-900/50 transition-colors';
+    showBtn.textContent = `Show ${kCount} working key${kCount > 1 ? 's' : ''}`;
+    showBtn.onclick = () => {
+      const isHidden = panel.classList.contains('hidden');
+      if (isHidden) {
+        panel.classList.remove('hidden'); panel.classList.add('flex');
+        showBtn.textContent = 'Hide keys';
+        panel.innerHTML = workingKeys.map(({ key, provider, models }) =>
+          `<div class="flex justify-between gap-4"><span>${escapeHtml(key)}</span><span class="text-neutral-500">${escapeHtml(provider)} · ${models.length} model${models.length > 1 ? 's' : ''}</span></div>`
+        ).join('');
+      } else {
+        panel.classList.add('hidden'); panel.classList.remove('flex');
+        showBtn.textContent = `Show ${kCount} working key${kCount > 1 ? 's' : ''}`;
+      }
+    };
+
+    // Save to vault button
     const saveBtn = document.createElement('button');
     saveBtn.type = 'button';
     saveBtn.className = 'w-full bg-blue-900/30 text-blue-400 border border-blue-800 rounded-lg py-2 text-xs font-bold hover:bg-blue-900/50 transition-colors disabled:opacity-50';
-    saveBtn.id = 'save-to-vault-btn';
-    if (savedCount > 0) {
-      saveBtn.textContent = `✓ ${savedCount} key${savedCount > 1 ? 's' : ''} saved to vault`;
+    saveBtn.textContent = 'Save to vault';
+    saveBtn.onclick = () => {
+      workingKeys.forEach(k => mergeKey(k));
+      saveBtn.textContent = `✓ ${kCount} key${kCount > 1 ? 's' : ''} saved to vault`;
       saveBtn.disabled = true;
-    } else {
-      saveBtn.textContent = 'Save to vault';
-      saveBtn.onclick = () => {
-        verifierWorkingKeys.forEach(k => mergeKey(k));
-        savedCount = verifierWorkingKeys.length;
-        saveBtn.textContent = `✓ ${savedCount} key${savedCount > 1 ? 's' : ''} saved to vault`;
-        saveBtn.disabled = true;
-        document.getElementById('vault-badge').classList.remove('hidden');
-        const banner = document.getElementById('saved-banner');
-        document.getElementById('saved-banner-text').textContent = `✓ ${savedCount} key${savedCount > 1 ? 's' : ''} saved to vault.`;
-        banner.classList.remove('hidden');
-      };
-    }
+      document.getElementById('vault-badge').classList.remove('hidden');
+      document.getElementById('saved-banner-text').textContent = `✓ ${kCount} key${kCount > 1 ? 's' : ''} saved to vault.`;
+      document.getElementById('saved-banner').classList.remove('hidden');
+    };
 
     btnRow.appendChild(dlBtn);
+    btnRow.appendChild(showBtn);
     btnRow.appendChild(saveBtn);
   }
 
-  // ── Run single key ───────────────────────────────────────────────────────
-  async function runSingleKey(apiKey, prompt, maxTok, signal) {
+  // ── Run single key against all its models ────────────────────────────────
+  async function runKey(apiKey, prompt, maxTok, pillContainer) {
     const provider = detectProvider(apiKey);
     if (!provider) return [];
+
     const models = PROVIDERS[provider].models;
-    const succeeded = [];
-
-    // Add row immediately when key starts
-    const statusEl = document.getElementById('model-status');
-    statusEl.classList.remove('hidden');
-
-    const rowWrap = document.createElement('div');
-    rowWrap.className = 'space-y-2';
-    const rowSep = document.createElement('div');
-    rowSep.className = 'pt-2 border-t border-neutral-800';
-
-    // Only add separator if not first row
-    const isFirst = statusEl.children.length === 0;
-    if (!isFirst) statusEl.appendChild(rowSep);
-
-    if (batchKeys.length > 1) {
-      const label = document.createElement('span');
-      label.className = 'text-xs font-bold text-neutral-500 font-mono block';
-      label.textContent = apiKey.slice(0, 32) + '…';
-      rowWrap.appendChild(label);
-    }
-
-    const pillRow = document.createElement('div');
-    pillRow.className = 'flex flex-wrap gap-2';
-    const pills = {};
+    const pills  = {};
 
     models.forEach(m => {
-      const el = makePillEl(m);
-      pillRow.appendChild(el);
+      const el = document.createElement('span');
+      el.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold bg-neutral-900 border-neutral-800 text-neutral-400 transition-colors status-pending';
+      el.innerHTML = `<span class="status-dot dot-pending"></span>${escapeHtml(m)}`;
+      pillContainer.appendChild(el);
       pills[m] = el;
     });
 
-    rowWrap.appendChild(pillRow);
-    statusEl.appendChild(rowWrap);
+    const setPill = (m, state, errMsg) => {
+      const base = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold transition-colors ';
+      const dot  = pills[m].querySelector('.status-dot');
+      if (state === 'success') {
+        pills[m].className = base + 'bg-emerald-950 border-emerald-900 text-emerald-400';
+        dot.className = 'status-dot dot-success';
+      } else if (state === 'skipped') {
+        pills[m].className = base + 'bg-neutral-900 border-neutral-800 text-neutral-500';
+        dot.className = 'status-dot dot-skipped';
+      } else {
+        pills[m].className = base + 'bg-red-950 border-red-900 text-red-400 cursor-help';
+        dot.className = 'status-dot dot-error';
+        if (errMsg) pills[m].title = errMsg;
+      }
+    };
+
+    const succeeded = [];
 
     await Promise.allSettled(models.map(async model => {
-      if (signal.aborted) return;
       try {
-        const { text, tokens } = await withTimeout(
-          withRetry(() => CALLERS[provider](apiKey, model, prompt, maxTok)),
-          timeoutForModel(model)
-        );
-        setPillState(pills[model], 'success');
+        const { text, tokens } = await withTimeout(CALLERS[provider](apiKey, model, prompt, maxTok), timeoutForModel(model));
+        setPill(model, 'success');
         appendResultCard(apiKey, model, text, tokens);
         succeeded.push(model);
       } catch (err) {
-        const errMsg = err instanceof Error ? err.message : String(err);
-        setPillState(pills[model], shouldSkip(err) ? 'skipped' : 'error', errMsg);
+        setPill(model, shouldSkip(err) ? 'skipped' : 'error', err.message || 'Error');
       }
     }));
-
-    if (succeeded.length === 0) {
-      // Remove row — key had no working models
-      rowWrap.remove();
-      if (!isFirst) rowSep.remove();
-    }
 
     return succeeded;
   }
 
-  // ── Main run ─────────────────────────────────────────────────────────────
+  // ── Main ─────────────────────────────────────────────────────────────────
   window.runPrompt = async function() {
-    const prompt = document.getElementById('prompt').value.trim();
-    const maxTok = parseInt(document.getElementById('max-tokens').value) || 1024;
+    const prompt  = document.getElementById('prompt').value.trim();
+    const maxTok  = parseInt(document.getElementById('max-tokens').value) || 1024;
     if (!prompt) { alert('Prompt required.'); return; }
 
-    const keys = [...new Set((batchKeys.length > 0 ? batchKeys : [apikeyEl.value.trim()]).filter(Boolean))];
-    if (keys.length === 0) { alert('API key required.'); return; }
-
-    const btn     = document.getElementById('run-btn');
-    const stopBtn = document.getElementById('stop-btn');
+    const btn      = document.getElementById('run-btn');
     const statusEl = document.getElementById('model-status');
     const resultsEl = document.getElementById('results');
 
-    abortController = new AbortController();
-    const signal = abortController.signal;
-
-    verifierWorkingKeys = [];
-    savedCount = 0;
-    let completedCount = 0;
-    const runningCount = keys.length;
-
+    workingKeys = [];
     btn.disabled = true;
-    btn.textContent = runningCount > 1 ? `0 / ${runningCount} keys · 0 working` : 'Running…';
-    stopBtn.classList.remove('hidden');
     statusEl.innerHTML = '';
-    statusEl.classList.add('hidden');
+    statusEl.classList.remove('hidden');
+    statusEl.classList.add('flex');
     resultsEl.innerHTML = '';
+
+    const wrap = document.getElementById('download-wrap');
+    wrap.classList.replace('flex', 'hidden');
+    document.getElementById('action-btns').innerHTML = '';
+    document.getElementById('keys-panel').innerHTML  = '';
+    document.getElementById('keys-panel').classList.add('hidden');
     document.getElementById('saved-banner').classList.add('hidden');
-    renderWorkingKeysPanel();
 
-    await runPool(keys.map(apiKey => async () => {
-      if (signal.aborted) return;
-      if (!detectProvider(apiKey)) { completedCount++; return; }
+    const rawKeys = batchKeys.length > 0 ? batchKeys : [apikeyEl.value.trim()];
+    const keys    = [...new Set(rawKeys.filter(Boolean))];
+    const isBatch = keys.length > 1;
 
-      const succeeded = await runSingleKey(apiKey, prompt, maxTok, signal);
-      completedCount++;
+    if (!isBatch) {
+      const apiKey = keys[0];
+      if (!apiKey) { alert('API key required.'); btn.disabled = false; btn.textContent = 'Execute Benchmark'; return; }
+      if (!detectProvider(apiKey)) { alert('Unrecognised API key prefix.'); btn.disabled = false; btn.textContent = 'Execute Benchmark'; return; }
 
-      if (succeeded.length > 0) {
-        const entry = { key: apiKey, provider: detectProvider(apiKey), models: succeeded, verifiedAt: new Date().toISOString() };
-        if (!verifierWorkingKeys.some(k => k.key === apiKey)) verifierWorkingKeys.push(entry);
+      btn.textContent = 'Running Benchmark...';
+      const pillRow = document.createElement('div');
+      pillRow.className = 'flex flex-wrap gap-2';
+      statusEl.appendChild(pillRow);
+
+      const succeeded = await runKey(apiKey, prompt, maxTok, pillRow);
+      if (succeeded.length > 0) mergeWorkingKey(apiKey, succeeded);
+    } else {
+      for (let i = 0; i < keys.length; i++) {
+        const apiKey = keys[i];
+        btn.textContent = `Running ${i + 1} / ${keys.length}…`;
+        if (!detectProvider(apiKey)) continue;
+
+        const headerRow = document.createElement('div');
+        headerRow.className = 'flex items-center gap-3 py-2 border-t border-neutral-800 mt-1 first:border-0 first:mt-0 first:pt-0';
+
+        const headerLabel = document.createElement('span');
+        headerLabel.className = 'text-xs font-bold text-neutral-500 uppercase tracking-widest font-mono flex-1';
+        headerLabel.textContent = apiKey.slice(0, 32) + '…';
+
+        const pillRow = document.createElement('div');
+        pillRow.className = 'flex flex-wrap gap-2';
+
+        headerRow.appendChild(headerLabel);
+        statusEl.appendChild(headerRow);
+        statusEl.appendChild(pillRow);
+
+        const succeeded = await runKey(apiKey, prompt, maxTok, pillRow);
+
+        if (succeeded.length === 0) {
+          headerRow.remove();
+          pillRow.remove();
+        } else {
+          mergeWorkingKey(apiKey, succeeded);
+
+          const showBtn = document.createElement('button');
+          showBtn.type = 'button';
+          showBtn.className = 'px-2 py-1 text-[10px] bg-blue-900/20 text-blue-400 border border-blue-800/50 rounded hover:bg-blue-900/40 transition-colors font-bold';
+          showBtn.textContent = 'Show key';
+
+          const keyPanel = document.createElement('div');
+          keyPanel.className = 'font-mono text-[10px] text-emerald-400 bg-neutral-950 border border-neutral-800 rounded-md p-2 mt-2 hidden break-all w-full';
+          keyPanel.textContent = apiKey;
+
+          showBtn.onclick = () => {
+            const isHidden = keyPanel.classList.contains('hidden');
+            keyPanel.classList.toggle('hidden', !isHidden);
+            showBtn.textContent = isHidden ? 'Hide key' : 'Show key';
+          };
+
+          headerRow.appendChild(showBtn);
+          pillRow.insertAdjacentElement('afterend', keyPanel);
+        }
       }
-
-      if (runningCount > 1) {
-        btn.textContent = `${completedCount} / ${runningCount} keys · ${verifierWorkingKeys.length} working`;
-      }
-
-      renderWorkingKeysPanel();
-    }));
+    }
 
     if (!resultsEl.hasChildNodes()) {
       const msg = document.createElement('div');
@@ -657,10 +614,9 @@
       resultsEl.appendChild(msg);
     }
 
+    renderDownloadButton();
     btn.disabled = false;
-    btn.textContent = 'Run';
-    stopBtn.classList.add('hidden');
-    abortController = null;
+    btn.textContent = 'Execute Benchmark';
   };
 
   document.getElementById('prompt').addEventListener('keydown', e => {
@@ -676,35 +632,21 @@
   function buildProviderFilters() {
     const container = document.getElementById('provider-filters');
     container.innerHTML = '';
-
     const makeBtn = (label, value) => {
       const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.textContent = label;
-      btn.dataset.filter = value ?? 'all';
+      btn.type = 'button'; btn.textContent = label; btn.dataset.filter = value ?? 'all';
       const isActive = (value === null && keysProviderFilter === null) || value === keysProviderFilter;
-      btn.className = `text-[10px] px-2 py-1 rounded font-bold uppercase tracking-wider border transition-colors ${
-        isActive
-          ? 'bg-neutral-700 border-neutral-600 text-white'
-          : 'bg-neutral-900 border-neutral-800 text-neutral-500 hover:border-neutral-600'
-      }`;
-      btn.onclick = () => {
-        keysProviderFilter = (keysProviderFilter === value && value !== null) ? null : value;
-        buildProviderFilters();
-        renderKeysTable();
-      };
+      btn.className = `text-[10px] px-2 py-1 rounded font-bold uppercase tracking-wider border transition-colors ${isActive ? 'bg-neutral-700 border-neutral-600 text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-500 hover:border-neutral-600'}`;
+      btn.onclick = () => { keysProviderFilter = (keysProviderFilter === value && value !== null) ? null : value; buildProviderFilters(); renderKeysTable(); };
       container.appendChild(btn);
     };
-
     makeBtn('All', null);
     Object.keys(PROVIDERS).forEach(p => makeBtn(p, p));
   }
 
   function renderKeysTable() {
     const search = document.getElementById('keys-search').value.toLowerCase();
-    const allKeys = getKeys();
-
-    const filtered = allKeys.filter(k => {
+    const filtered = getKeys().filter(k => {
       if (keysProviderFilter && k.provider !== keysProviderFilter) return false;
       if (search && !k.key.toLowerCase().includes(search)) return false;
       return true;
@@ -720,49 +662,32 @@
     if (filtered.length === 0) {
       const tr = document.createElement('tr');
       tr.innerHTML = `<td colspan="5" class="px-4 py-8 text-center text-neutral-600 text-xs">No keys match the current filter.</td>`;
-      tbody.appendChild(tr);
-      return;
+      tbody.appendChild(tr); return;
     }
 
     filtered.forEach(entry => {
       const tr = document.createElement('tr');
       tr.className = 'border-b border-neutral-800 hover:bg-neutral-900/40 transition-colors';
       tr.innerHTML = `
-        <td class="px-4 py-3">
-          <span class="badge badge-${escapeHtml(entry.provider)}">${escapeHtml(PROVIDERS[entry.provider]?.label ?? entry.provider)}</span>
-        </td>
+        <td class="px-4 py-3"><span class="badge badge-${escapeHtml(entry.provider)}">${escapeHtml(PROVIDERS[entry.provider]?.label ?? entry.provider)}</span></td>
         <td class="px-4 py-3 font-mono text-xs text-neutral-300">${escapeHtml(entry.key.slice(0, 20))}…${escapeHtml(entry.key.slice(-4))}</td>
-        <td class="px-4 py-3">
-          <div class="flex flex-wrap gap-1">
-            ${(entry.models ?? []).map(m => `<span class="text-[10px] bg-neutral-800 text-neutral-400 px-1.5 py-0.5 rounded font-mono">${escapeHtml(m)}</span>`).join('')}
-          </div>
-        </td>
-        <td class="px-4 py-3 text-[10px] text-neutral-600 font-mono">
-          ${entry.verifiedAt ? new Date(entry.verifiedAt).toLocaleDateString() : '—'}
-        </td>
+        <td class="px-4 py-3"><div class="flex flex-wrap gap-1">${(entry.models ?? []).map(m => `<span class="text-[10px] bg-neutral-800 text-neutral-400 px-1.5 py-0.5 rounded font-mono">${escapeHtml(m)}</span>`).join('')}</div></td>
+        <td class="px-4 py-3 text-[10px] text-neutral-600 font-mono">${entry.verifiedAt ? new Date(entry.verifiedAt).toLocaleDateString() : '—'}</td>
         <td class="px-4 py-3">
           <div class="flex gap-2 justify-end">
-            <button type="button" data-copy="${escapeHtml(entry.key)}"
-              class="text-[10px] px-2 py-1 bg-neutral-800 hover:bg-neutral-700 text-neutral-400 rounded transition-colors font-bold">Copy</button>
-            <button type="button" data-delete="${escapeHtml(entry.key)}"
-              class="text-[10px] px-2 py-1 bg-red-950/40 hover:bg-red-950/80 text-red-400 border border-red-900/50 rounded transition-colors font-bold">Delete</button>
+            <button type="button" data-copy="${escapeHtml(entry.key)}" class="text-[10px] px-2 py-1 bg-neutral-800 hover:bg-neutral-700 text-neutral-400 rounded transition-colors font-bold">Copy</button>
+            <button type="button" data-delete="${escapeHtml(entry.key)}" class="text-[10px] px-2 py-1 bg-red-950/40 hover:bg-red-950/80 text-red-400 border border-red-900/50 rounded transition-colors font-bold">Delete</button>
           </div>
         </td>`;
       tbody.appendChild(tr);
     });
 
-    // Delegate copy/delete events
-    tbody.querySelectorAll('[data-copy]').forEach(btn => {
-      btn.onclick = () => navigator.clipboard.writeText(btn.dataset.copy);
-    });
-    tbody.querySelectorAll('[data-delete]').forEach(btn => {
-      btn.onclick = () => { deleteVaultKey(btn.dataset.delete); renderKeysTable(); updateVaultBadge(); };
-    });
+    tbody.querySelectorAll('[data-copy]').forEach(btn => { btn.onclick = () => navigator.clipboard.writeText(btn.dataset.copy); });
+    tbody.querySelectorAll('[data-delete]').forEach(btn => { btn.onclick = () => { deleteVaultKey(btn.dataset.delete); renderKeysTable(); updateVaultBadge(); }; });
   }
 
   function updateVaultBadge() {
-    const count = getKeys().length;
-    document.getElementById('vault-badge').classList.toggle('hidden', count === 0);
+    document.getElementById('vault-badge').classList.toggle('hidden', getKeys().length === 0);
   }
 
   function renderKeysTab() {
@@ -770,38 +695,27 @@
     const isEmpty = allKeys.length === 0;
     document.getElementById('keys-empty').classList.toggle('hidden', !isEmpty);
     document.getElementById('keys-content').classList.toggle('hidden', isEmpty);
-    if (!isEmpty) {
-      buildProviderFilters();
-      renderKeysTable();
-    }
+    if (!isEmpty) { buildProviderFilters(); renderKeysTable(); }
     updateVaultBadge();
   }
 
   window.renderKeysTable = renderKeysTable;
 
   window.importKeys = function(input) {
-    const file = input.files[0];
-    if (!file) return;
+    const file = input.files[0]; if (!file) return;
     file.text().then(raw => {
       try {
-        const json = JSON.parse(raw);
-        if (!Array.isArray(json)) return;
-        const incoming = json.map(item =>
-          typeof item === 'string'
-            ? { key: item, provider: detectProvider(item) ?? 'openai', models: [], verifiedAt: new Date().toISOString() }
-            : item
-        );
+        const json = JSON.parse(raw); if (!Array.isArray(json)) return;
+        const incoming = json.map(item => typeof item === 'string'
+          ? { key: item, provider: detectProvider(item) ?? 'openai', models: [], verifiedAt: new Date().toISOString() }
+          : item);
         const current = getKeys();
         incoming.forEach(k => {
           const idx = current.findIndex(c => c.key === k.key);
-          if (idx >= 0) {
-            k.models.forEach(m => { if (!current[idx].models.includes(m)) current[idx].models.push(m); });
-          } else {
-            current.push(k);
-          }
+          if (idx >= 0) { k.models.forEach(m => { if (!current[idx].models.includes(m)) current[idx].models.push(m); }); }
+          else { current.push(k); }
         });
-        saveKeys(current);
-        renderKeysTab();
+        saveKeys(current); renderKeysTab();
       } catch {}
     });
     input.value = '';
@@ -816,8 +730,7 @@
     });
     const blob = new Blob([JSON.stringify(filtered, null, 2)], { type: 'application/json' });
     const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: 'keys_export.json' });
-    a.click();
-    URL.revokeObjectURL(a.href);
+    a.click(); URL.revokeObjectURL(a.href);
   };
 
   // Init

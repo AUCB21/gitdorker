@@ -14,6 +14,9 @@ from rich.panel import Panel
 from rich.prompt import Confirm, Prompt
 from rich.table import Table
 
+import json
+import re
+
 from gitdorker.api.client import GitHubSearchClient
 from gitdorker.auth import TokenMissingError, resolve_token
 from gitdorker.config import Dork, DorksConfig
@@ -33,6 +36,68 @@ from gitdorker.searchers.code import search_code
 from gitdorker.searchers.commits import search_commits
 from gitdorker.searchers.repos import search_repositories
 from gitdorker.verifiers import router
+
+# ── Key export (mirrors export_keys.py) ──────────────────────────────────────
+
+_CRED_PATTERNS: dict[str, re.Pattern[str]] = {
+    "anthropic":  re.compile(r"sk-ant-(?:api03|admin01)-[\w\-]{88,100}"),
+    "openai":     re.compile(r"sk-(?:proj|svcacct|service)-[A-Za-z0-9_\-]+|sk-[a-zA-Z0-9]{20}T3BlbkFJ[A-Za-z0-9_\-]+"),
+    "gemini":     re.compile(r"AIza[0-9A-Za-z\-_]{35}"),
+    "huggingface": re.compile(r"(?:hf_|api_org_)[a-zA-Z0-9]{34}"),
+    "groq":       re.compile(r"gsk_[a-zA-Z0-9]{52}"),
+    "replicate":  re.compile(r"r8_[0-9A-Za-z\-_]{37}"),
+    "perplexity": re.compile(r"pplx-[a-zA-Z0-9]{48}"),
+    "xai":        re.compile(r"xai-[0-9a-zA-Z_]{80}"),
+    "openrouter": re.compile(r"sk-or-v1-[a-zA-Z0-9]{64}"),
+    "nvidia":     re.compile(r"nvapi-[a-zA-Z0-9_\-]{55}"),
+    "cerebras":   re.compile(r"csk-[a-zA-Z0-9]{32}"),
+}
+
+_RE_CRED = re.compile(r"```\n([^\n`]+)\n```")
+
+
+def _gitignore_add(entry: Path) -> None:
+    """Append entry to .gitignore (repo root) if not already present."""
+    gitignore = Path(".gitignore")
+    line = entry.as_posix().rstrip("/") + "/"
+    if gitignore.exists():
+        existing = gitignore.read_text(encoding="utf-8")
+        if line in existing.splitlines():
+            return
+        gitignore.write_text(existing.rstrip() + f"\n{line}\n", encoding="utf-8")
+    else:
+        gitignore.write_text(f"{line}\n", encoding="utf-8")
+    print_info(f"Added {line!r} to .gitignore")
+    log.info("Added %r to .gitignore", line)
+
+
+def _export_found_keys(reports_dir: Path) -> None:
+    """Parse all reports and write unique keys to found_keys/found.json."""
+    files = sorted(reports_dir.glob("*.md"))
+    if not files:
+        return
+
+    seen: set[str] = set()
+    keys: list[str] = []
+
+    for path in files:
+        text = path.read_text(encoding="utf-8", errors="replace")
+        marker = text.find("**Credential found")
+        if marker == -1:
+            continue
+        for m in _RE_CRED.finditer(text[marker:]):
+            value = m.group(1).strip()
+            if value and value not in seen:
+                seen.add(value)
+                keys.append(value)
+
+    out_dir = Path("found_keys")
+    out_dir.mkdir(exist_ok=True)
+    out_path = out_dir / "found.json"
+    out_path.write_text(json.dumps(keys, indent=2), encoding="utf-8")
+    print_info(f"Exported {len(keys)} key(s) → {out_path}")
+    log.info("Exported %d keys to %s", len(keys), out_path)
+
 
 _SEARCHERS = {
     "code": search_code,
@@ -334,6 +399,7 @@ def main(
             loop, loop_delay, max_results or "all",
         )
         signal.signal(signal.SIGINT, _request_stop)
+        _gitignore_add(output_dir)
         asyncio.run(_loop(token, config, output_dir, max_results, loop, loop_delay))
         return
 
@@ -356,6 +422,7 @@ def main(
     )
 
     log.info("Loaded %d dork(s)", len(config.dorks))
+    _gitignore_add(output_dir)
     asyncio.run(_loop(resolved_token, config, output_dir, max_results, loop, loop_delay))
 
 
@@ -383,6 +450,7 @@ async def _loop(
         total_candidates += candidates
 
         print_summary(total_candidates, len(total_reports), output_dir, cycle=cycle)
+        await asyncio.to_thread(_export_found_keys, output_dir)
         log.info(
             "Cycle %d done — candidates=%d seen_keys=%d total_reports=%d",
             cycle, candidates, len(seen_keys), len(total_reports),

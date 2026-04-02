@@ -20,6 +20,7 @@ dist/
 logs/
 *.log
 reports/
+found_keys/
 
 # Key vault data (stays local only)
 web/keys.json

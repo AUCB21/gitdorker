@@ -107,20 +107,82 @@ def parse_report(path: Path) -> list[dict]:
     return rows
 
 
+def _pick_reports_dir() -> Path:
+    """Interactively prompt the user to pick a reports directory."""
+    # Scan cwd for directories that contain .md files (likely report dirs)
+    cwd = Path(".")
+    candidates = sorted(
+        d for d in cwd.iterdir()
+        if d.is_dir() and any(d.glob("*.md")) and not d.name.startswith(".")
+    )
+
+    if not candidates:
+        print("[!] No directories with .md files found in current directory.")
+        raw = input("    Enter path to reports directory: ").strip()
+        return Path(raw)
+
+    print("\nAvailable report directories:\n")
+    for i, d in enumerate(candidates, 1):
+        count = len(list(d.glob("*.md")))
+        print(f"  [{i}] {d}/  ({count} report{'s' if count != 1 else ''})")
+    print(f"  [0] Enter path manually")
+    print()
+
+    while True:
+        raw = input(f"Select [0-{len(candidates)}]: ").strip()
+        if raw == "0":
+            raw = input("    Enter path to reports directory: ").strip()
+            return Path(raw)
+        if raw.isdigit() and 1 <= int(raw) <= len(candidates):
+            return candidates[int(raw) - 1]
+        print(f"    Please enter a number between 0 and {len(candidates)}.")
+
+
+def _pick_out_path(reports_dir: Path) -> Path:
+    """Prompt the user to pick an output file path."""
+    suggestions = [
+        Path("found_keys") / "found.json",
+        Path("web") / "keys.json",
+        reports_dir / "keys.json",
+    ]
+
+    print("\nOutput file:\n")
+    for i, p in enumerate(suggestions, 1):
+        print(f"  [{i}] {p}")
+    print(f"  [0] Enter path manually")
+    print()
+
+    while True:
+        raw = input(f"Select [0-{len(suggestions)}]: ").strip()
+        if raw == "0":
+            raw = input("    Enter output file path: ").strip()
+            return Path(raw)
+        if raw.isdigit() and 1 <= int(raw) <= len(suggestions):
+            return suggestions[int(raw) - 1]
+        print(f"    Please enter a number between 0 and {len(suggestions)}.")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Export gitdorker report keys to JSON.")
-    parser.add_argument("--reports", default="reports",   help="Reports directory (default: reports/)")
-    parser.add_argument("--out",     default="web/keys.json", help="Output JSON file (default: web/keys.json)")
+    parser.add_argument("--reports", default=None, help="Reports directory (omit to get an interactive menu)")
+    parser.add_argument("--out",     default=None, help="Output JSON file (omit to get an interactive menu)")
     args = parser.parse_args()
 
-    reports_dir = Path(args.reports)
-    if not reports_dir.is_dir():
-        print(f"[error] reports directory not found: {reports_dir}", file=sys.stderr)
-        sys.exit(1)
+    if args.reports:
+        reports_dir = Path(args.reports)
+        if not reports_dir.is_dir():
+            print(f"[error] reports directory not found: {reports_dir}", file=sys.stderr)
+            sys.exit(1)
+    else:
+        reports_dir = _pick_reports_dir()
+        if not reports_dir.is_dir():
+            print(f"[error] directory not found: {reports_dir}", file=sys.stderr)
+            sys.exit(1)
+
+    out_path = Path(args.out) if args.out else _pick_out_path(reports_dir)
 
     files = sorted(reports_dir.glob("*.md"))
-
-    print(f"[+] Scanning {len(files)} report(s) -> {args.out}")
+    print(f"\n[+] Scanning {len(files)} report(s) → {out_path}")
 
     seen: set[str] = set()
     records: list[dict] = []
@@ -132,7 +194,6 @@ def main() -> None:
             seen.add(row["key_value"])
             records.append(row)
 
-    out_path = Path(args.out)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(
         json.dumps([r["key_value"] for r in records], indent=2),
