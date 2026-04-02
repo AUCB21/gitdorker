@@ -30,6 +30,7 @@
     .dot-success  { background: #22c55e; box-shadow: 0 0 8px rgba(34,197,94,0.5); }
     .dot-skipped  { background: #525252; }
     .dot-error    { background: #ef4444; }
+    .dot-ratelimited { background: #f59e0b; }
 
     @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
     @keyframes fadein { from{opacity:0;transform:translateY(6px);} to{opacity:1;transform:none;} }
@@ -470,7 +471,7 @@
     btnRow.appendChild(saveBtn);
   }
 
-  // ── Run single key against all its models ────────────────────────────────
+  // ── Run single key against all its models ──
   async function runKey(apiKey, prompt, maxTok, pillContainer) {
     const provider = detectProvider(apiKey);
     if (!provider) return [];
@@ -478,44 +479,44 @@
     const models = PROVIDERS[provider].models;
     const pills  = {};
 
+    // 1. Setup the UI pills for the models being tested
     models.forEach(m => {
       const el = document.createElement('span');
       el.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold bg-neutral-900 border-neutral-800 text-neutral-400 transition-colors status-pending';
-      el.innerHTML = `<span class="status-dot dot-pending"></span>${escapeHtml(m)}`;
+      el.innerHTML = `<span class="status-dot"></span>${m}`;
       pillContainer.appendChild(el);
       pills[m] = el;
     });
 
-    const setPill = (m, state, errMsg) => {
-      const base = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold transition-colors ';
-      const dot  = pills[m].querySelector('.status-dot');
-      if (state === 'success') {
-        pills[m].className = base + 'bg-emerald-950 border-emerald-900 text-emerald-400';
-        dot.className = 'status-dot dot-success';
-      } else if (state === 'skipped') {
-        pills[m].className = base + 'bg-neutral-900 border-neutral-800 text-neutral-500';
-        dot.className = 'status-dot dot-skipped';
-      } else {
-        pills[m].className = base + 'bg-red-950 border-red-900 text-red-400 cursor-help';
-        dot.className = 'status-dot dot-error';
-        if (errMsg) pills[m].title = errMsg;
-      }
+    const setPill = (m, state) => {
+        const baseClass = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold transition-colors ';
+        if (state === 'success')      pills[m].className = baseClass + 'bg-emerald-950 border-emerald-900 text-emerald-400 status-success';
+        else if (state === 'skipped') pills[m].className = baseClass + 'bg-neutral-900 border-neutral-800 text-neutral-500 status-skipped';
+        else if (state === 'ratelimited') pills[m].className = baseClass + 'bg-yellow-950 border-yellow-900 text-yellow-400 status-ratelimited';
+        else if (state === 'error')   pills[m].className = baseClass + 'bg-red-950 border-red-900 text-red-400 status-error';
     };
 
     const succeeded = [];
+    let allRateLimited = true; // assume all rate-limited until proven otherwise
 
-    await Promise.allSettled(models.map(async model => {
+    // 2. The actual validity test: Ping the APIs sequentially to avoid rate limits
+    for (const model of models) {
       try {
         const { text, tokens } = await withTimeout(CALLERS[provider](apiKey, model, prompt, maxTok), timeoutForModel(model));
         setPill(model, 'success');
         appendResultCard(apiKey, model, text, tokens);
         succeeded.push(model);
+        allRateLimited = false;
       } catch (err) {
-        setPill(model, shouldSkip(err) ? 'skipped' : 'error', err.message || 'Error');
+        const isSkipped = shouldSkip(err);
+        setPill(model, isSkipped ? 'ratelimited' : 'error');
+        pills[model].title = err.message || 'Error';
+        if (!isSkipped) allRateLimited = false;
       }
-    }));
+    }
 
-    return succeeded;
+    // Return signal: null = all rate-limited (inconclusive), [] = all failed, [...] = succeeded models
+    return succeeded.length > 0 ? succeeded : (allRateLimited ? null : []);
   }
 
   // ── Main ─────────────────────────────────────────────────────────────────
@@ -557,7 +558,7 @@
       statusEl.appendChild(pillRow);
 
       const succeeded = await runKey(apiKey, prompt, maxTok, pillRow);
-      if (succeeded.length > 0) mergeWorkingKey(apiKey, succeeded);
+      if (succeeded && succeeded.length > 0) mergeWorkingKey(apiKey, succeeded);
     } else {
       for (let i = 0; i < keys.length; i++) {
         const apiKey = keys[i];
@@ -580,7 +581,10 @@
 
         const succeeded = await runKey(apiKey, prompt, maxTok, pillRow);
 
-        if (succeeded.length === 0) {
+        if (succeeded === null) {
+          // All models were rate-limited — inconclusive, keep row with warning
+          headerLabel.innerHTML += ' <span class="text-yellow-400 font-normal normal-case tracking-normal">⚠ Rate limited — rerun to validate</span>';
+        } else if (succeeded.length === 0) {
           headerRow.remove();
           pillRow.remove();
         } else {
