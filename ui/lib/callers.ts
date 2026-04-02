@@ -1,6 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // SDKs are loaded dynamically from esm.sh — no static types available; any is intentional here.
 
+export const API_TIMEOUT_MS = 60_000
+
+export function withTimeout<T>(promise: Promise<T>, ms = API_TIMEOUT_MS): Promise<T> {
+  let id: ReturnType<typeof setTimeout>
+  const timeout = new Promise<never>((_, reject) => {
+    id = setTimeout(() => reject(new Error(`API timeout after ${ms / 1000}s`)), ms)
+  })
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(id))
+}
+
 export interface CallResult {
   text: string
   tokens: string

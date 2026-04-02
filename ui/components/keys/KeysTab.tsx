@@ -23,7 +23,8 @@ function useVaultKeys(): [VerifiedKey[], () => void] {
 }
 
 // refreshSignal prop kept for API compatibility; vault auto-refreshes via useSyncExternalStore
-export function KeysTab({ refreshSignal: _ = 0 }: { refreshSignal?: number }) {
+export function KeysTab({ refreshSignal: _sig = 0 }: { refreshSignal?: number }) {
+  void _sig
   const [keys, refresh] = useVaultKeys()
   const [search, setSearch] = useState('')
   const [providerFilter, setProviderFilter] = useState<Provider | null>(null)

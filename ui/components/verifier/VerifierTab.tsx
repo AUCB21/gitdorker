@@ -6,7 +6,7 @@ import { ModelPills, type PillState } from './ModelPills'
 import { ProviderBadge } from './ProviderBadge'
 import { ResultCard } from './ResultCard'
 import { detectProvider, PROVIDERS } from '@/lib/providers'
-import { CALLERS } from '@/lib/callers'
+import { CALLERS, withTimeout } from '@/lib/callers'
 import { shouldSkip } from '@/lib/placeholder'
 import { mergeKey } from '@/lib/storage'
 import type { Provider, VerifiedKey } from '@/types'
@@ -57,7 +57,7 @@ export function VerifierTab({ onKeySaved }: { onKeySaved?: () => void }) {
       models.map(async (model) => {
         if (signal.aborted) return
         try {
-          const { text, tokens } = await CALLERS[provider](apiKey, model, prompt, maxTokens)
+          const { text, tokens } = await withTimeout(CALLERS[provider](apiKey, model, prompt, maxTokens))
           setPillState(keyIdx, model, 'success')
           setResults((prev) => [...prev, { apiKey, model, text, tokens }])
           succeeded.push(model)
@@ -71,7 +71,7 @@ export function VerifierTab({ onKeySaved }: { onKeySaved?: () => void }) {
 
   async function run() {
     if (!prompt.trim()) return
-    const keys = activeKeys.filter(Boolean)
+    const keys = [...new Set(activeKeys.filter(Boolean))]
     if (keys.length === 0) return
 
     abortRef.current = new AbortController()
