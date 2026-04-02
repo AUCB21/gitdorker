@@ -1,0 +1,31 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "gitdorker"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "click>=8.1",
+    "requests>=2.32",
+    "rich>=13.9",
+    "pydantic>=2.9",
+    "python-dotenv>=1.0",
+    "anthropic>=0.40",
+    "openai>=1.50",
+    "google-genai>=1.0",
+]
+
+[project.scripts]
+gitdorker = "gitdorker.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["gitdorker"]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3",
+    "responses>=0.25",
+    "pytest-cov>=6.0",
+]

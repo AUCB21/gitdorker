@@ -1,0 +1,35 @@
+# Claude Code
+.claude/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+env/
+.venv/
+*.egg-info/
+dist/
+
+# Logs & runtime output
+logs/
+*.log
+reports/
+
+# Key vault data (stays local only)
+web/keys.json
+web/working_keys.json
+
+# Next.js
+.next/
+out/
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db

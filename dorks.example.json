@@ -1,0 +1,76 @@
+{
+  "dorks": [
+    {
+      "query": "sk-ant-api03- filename:.env",
+      "type": "code",
+      "description": "Anthropic API key (sk-ant-api03- prefix) exposed in .env file",
+      "remediation": "Revoke immediately at console.anthropic.com → API Keys. Purge from git history with `git filter-repo --path .env --invert-paths`."
+    },
+    {
+      "query": "sk-ant-api03- language:python",
+      "type": "code",
+      "description": "Anthropic API key hardcoded in Python source file",
+      "remediation": "Revoke immediately at console.anthropic.com → API Keys and replace with os.environ or a secrets manager."
+    },
+    {
+      "query": "sk-ant-api03- language:javascript",
+      "type": "code",
+      "description": "Anthropic API key hardcoded in JavaScript/TypeScript source",
+      "remediation": "Revoke immediately at console.anthropic.com → API Keys and replace with process.env or a secrets manager."
+    },
+    {
+      "query": "sk-proj- filename:.env",
+      "type": "code",
+      "description": "OpenAI project API key (sk-proj- prefix) exposed in .env file",
+      "remediation": "Revoke immediately at platform.openai.com/api-keys. Purge from git history."
+    },
+    {
+      "query": "sk-proj- language:python",
+      "type": "code",
+      "description": "OpenAI project API key hardcoded in Python source",
+      "remediation": "Revoke immediately at platform.openai.com/api-keys and replace with an environment variable."
+    },
+    {
+      "query": "sk-proj- language:javascript",
+      "type": "code",
+      "description": "OpenAI project API key hardcoded in JavaScript/TypeScript source",
+      "remediation": "Revoke immediately at platform.openai.com/api-keys and replace with process.env."
+    },
+    {
+      "query": "AIzaSy filename:.env",
+      "type": "code",
+      "description": "Google API key (AIzaSy prefix, used for Gemini) exposed in .env file",
+      "remediation": "Revoke immediately at console.cloud.google.com/apis/credentials. Purge from git history."
+    },
+    {
+      "query": "AIzaSy language:python",
+      "type": "code",
+      "description": "Google/Gemini API key hardcoded in Python source",
+      "remediation": "Revoke at console.cloud.google.com/apis/credentials and replace with an environment variable."
+    },
+    {
+      "query": "AIzaSy language:javascript",
+      "type": "code",
+      "description": "Google/Gemini API key hardcoded in JavaScript/TypeScript source",
+      "remediation": "Revoke at console.cloud.google.com/apis/credentials and replace with process.env."
+    },
+    {
+      "query": "ghp_ filename:.env",
+      "type": "code",
+      "description": "GitHub classic PAT (ghp_ prefix) exposed in .env file",
+      "remediation": "Revoke immediately at github.com/settings/tokens. Audit token activity log for unauthorized usage."
+    },
+    {
+      "query": "github_pat_ filename:.env",
+      "type": "code",
+      "description": "GitHub fine-grained PAT (github_pat_ prefix) exposed in .env file",
+      "remediation": "Revoke immediately at github.com/settings/tokens. Audit token activity log for unauthorized usage."
+    },
+    {
+      "query": "ghp_ language:yaml",
+      "type": "code",
+      "description": "GitHub PAT hardcoded in YAML (likely CI/CD config)",
+      "remediation": "Revoke immediately at github.com/settings/tokens and replace with GitHub Actions encrypted secrets."
+    }
+  ]
+}
