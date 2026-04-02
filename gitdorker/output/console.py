@@ -48,14 +48,14 @@ def live_progress() -> Generator[Progress, None, None]:
 def print_result(result: SearchResult, report_path: Path) -> None:
     console.print(
         f"[green]✓[/green] [{result.search_type.value}] "
-        f"[bold]{result.repo_full_name}[/bold] — "
+        f"[bold]{result.repo_full_name}[/bold] - "
         f"{result.file_path or result.url}  "
         f"[dim]→ {report_path.name}[/dim]"
     )
 
 
 def print_summary(total: int, written: int, output_dir: Path, cycle: int | None = None) -> None:
-    label = f"Summary — cycle {cycle}" if cycle is not None else "Summary"
+    label = f"Summary - cycle {cycle}" if cycle is not None else "Summary"
 
     table = Table(show_header=False, box=None, padding=(0, 2))
     table.add_column(style="dim", no_wrap=True)

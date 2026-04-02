@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-export_keys.py — Parse gitdorker report files and export all API keys to JSON.
+export_keys.py - Parse gitdorker report files and export all API keys to JSON.
 
 Usage:
     python export_keys.py                        # reads reports/, writes keys.json

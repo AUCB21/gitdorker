@@ -112,8 +112,8 @@ _console = Console()
 def _request_stop(_signum: int, _frame: object) -> None:
     global _stop_requested
     _stop_requested = True
-    print_info("Stop requested — finishing current cycle then exiting…")
-    log.info("SIGINT received — will stop after current cycle")
+    print_info("Stop requested - finishing current cycle then exiting…")
+    log.info("SIGINT received - will stop after current cycle")
 
 
 # ── Interactive wizard ────────────────────────────────────────────────────────
@@ -147,25 +147,25 @@ def _wizard() -> tuple[str, DorksConfig, Path, int | None, bool, int]:
     """
     print_banner()
     _console.print(Panel(
-        "[bold]Interactive setup[/bold]\n[dim]Answer each prompt — press Enter to accept the default.[/dim]",
+        "[bold]Interactive setup[/bold]\n[dim]Answer each prompt - press Enter to accept the default.[/dim]",
         border_style="yellow",
         padding=(0, 2),
     ))
     _console.print()
 
     # ── Step 1: Token ──────────────────────────────────────────────────────────
-    _console.rule("[dim]Step 1 — GitHub Token[/dim]")
+    _console.rule("[dim]Step 1 - GitHub Token[/dim]")
     token = _prompt_token()
 
     # ── Step 2: Search mode ────────────────────────────────────────────────────
-    _console.rule("[dim]Step 2 — Search Source[/dim]")
+    _console.rule("[dim]Step 2 - Search Source[/dim]")
     _console.print("  [1] Load dorks from a JSON file")
     _console.print("  [2] Enter a single search query")
     mode = Prompt.ask("  Mode", choices=["1", "2"], default="1")
 
     if mode == "1":
         # ── Step 3a: Dorks file ────────────────────────────────────────────────
-        _console.rule("[dim]Step 3 — Dorks File[/dim]")
+        _console.rule("[dim]Step 3 - Dorks File[/dim]")
         while True:
             raw = Prompt.ask("  Path to dorks JSON", default="dorks.json")
             p = Path(raw)
@@ -176,7 +176,7 @@ def _wizard() -> tuple[str, DorksConfig, Path, int | None, bool, int]:
             _console.print(f"  [red]File not found:[/red] {p}")
     else:
         # ── Step 3b: Single query ──────────────────────────────────────────────
-        _console.rule("[dim]Step 3 — Search Query[/dim]")
+        _console.rule("[dim]Step 3 - Search Query[/dim]")
         query = Prompt.ask("  Query string").strip()
         search_type = Prompt.ask(
             "  Search type",
@@ -186,12 +186,12 @@ def _wizard() -> tuple[str, DorksConfig, Path, int | None, bool, int]:
         config = DorksConfig.from_query(query, search_type)  # type: ignore[arg-type]
 
     # ── Step 4: Output dir ─────────────────────────────────────────────────────
-    _console.rule("[dim]Step 4 — Output[/dim]")
+    _console.rule("[dim]Step 4 - Output[/dim]")
     out_raw = Prompt.ask("  Output directory", default="reports")
     output_dir = Path(out_raw)
 
     # ── Step 5: Max results ────────────────────────────────────────────────────
-    _console.rule("[dim]Step 5 — Limits[/dim]")
+    _console.rule("[dim]Step 5 - Limits[/dim]")
     max_raw = Prompt.ask(
         "  Max results per dork (blank = all, GitHub cap 1000)",
         default="",
@@ -199,7 +199,7 @@ def _wizard() -> tuple[str, DorksConfig, Path, int | None, bool, int]:
     max_results: int | None = int(max_raw) if max_raw.isdigit() else None
 
     # ── Step 6: Loop ───────────────────────────────────────────────────────────
-    _console.rule("[dim]Step 6 — Loop Mode[/dim]")
+    _console.rule("[dim]Step 6 - Loop Mode[/dim]")
     loop = Confirm.ask("  Run in continuous loop until Ctrl+C?", default=False)
     loop_delay = 300
     if loop:
@@ -236,7 +236,7 @@ async def _verify_result(
 ) -> list[tuple[SearchResult, Path]]:
     raw_url = result.raw_url
     if not raw_url:
-        log.info("Non-code result — writing without verification: %s", result.url)
+        log.info("Non-code result - writing without verification: %s", result.url)
         report_path = await asyncio.to_thread(
             write_report, result, dork.description, dork.remediation, output_dir
         )
@@ -267,7 +267,7 @@ async def _verify_result(
         is_valid = await asyncio.to_thread(router.verify, match)
 
         if is_valid:
-            log.info("VALID credential [%s] in %s — writing report", match.key_type, result.repo_full_name)
+            log.info("VALID credential [%s] in %s - writing report", match.key_type, result.repo_full_name)
             verified = dataclasses.replace(result, extracted_credential=match.value)
             report_path = await asyncio.to_thread(
                 write_report, verified, dork.description, dork.remediation, output_dir
@@ -319,7 +319,7 @@ async def _run_cycle(
                     status="searching…",
                     total=None,
                 )
-                log.info("Cycle %d — dork type=%s query=%r", cycle, dork.type, dork.query)
+                log.info("Cycle %d - dork type=%s query=%r", cycle, dork.type, dork.query)
                 searcher = _SEARCHERS[dork.type]
 
                 page_buffer: list[SearchResult] = []
@@ -340,14 +340,14 @@ async def _run_cycle(
                             progress.update(task_id, status=f"{candidates} candidates, {len(total_reports)} valid…")
 
                 except Exception as exc:
-                    print_error(f"Query failed: {dork.query!r} — {exc}")
-                    log.error("Cycle %d query failed: %r — %s", cycle, dork.query, exc)
+                    print_error(f"Query failed: {dork.query!r} - {exc}")
+                    log.error("Cycle %d query failed: %r - %s", cycle, dork.query, exc)
 
                 if page_buffer:
                     progress.update(task_id, status=f"verifying final page…")
                     await _process_page(page_buffer, dork, output_dir, total_reports, seen_keys)
 
-                progress.update(task_id, status=f"done — {len(total_reports)} valid so far")
+                progress.update(task_id, status=f"done - {len(total_reports)} valid so far")
 
     return candidates
 
@@ -384,7 +384,7 @@ def main(
     loop_delay: int,
     verbose: bool,
 ) -> None:
-    """GitHub Dorker — search GitHub for exposed LLM API keys and secrets.
+    """GitHub Dorker - search GitHub for exposed LLM API keys and secrets.
 
     Run with no arguments to launch the interactive wizard.
     Use --loop to run continuously until Ctrl+C.
@@ -395,7 +395,7 @@ def main(
     if not dorks_file and not query:
         token, config, output_dir, max_results, loop, loop_delay = _wizard()
         log.info(
-            "gitdorker started (interactive) — loop=%s delay=%ds max_results=%s",
+            "gitdorker started (interactive) - loop=%s delay=%ds max_results=%s",
             loop, loop_delay, max_results or "all",
         )
         signal.signal(signal.SIGINT, _request_stop)
@@ -405,7 +405,7 @@ def main(
 
     # ── Headless / scripted mode ───────────────────────────────────────────────
     log.info(
-        "gitdorker started — loop=%s delay=%ds max_results=%s",
+        "gitdorker started - loop=%s delay=%ds max_results=%s",
         loop, loop_delay, max_results or "all",
     )
     signal.signal(signal.SIGINT, _request_stop)
@@ -452,7 +452,7 @@ async def _loop(
         print_summary(total_candidates, len(total_reports), output_dir, cycle=cycle)
         await asyncio.to_thread(_export_found_keys, output_dir)
         log.info(
-            "Cycle %d done — candidates=%d seen_keys=%d total_reports=%d",
+            "Cycle %d done - candidates=%d seen_keys=%d total_reports=%d",
             cycle, candidates, len(seen_keys), len(total_reports),
         )
 
@@ -472,4 +472,4 @@ async def _loop(
 
         cycle += 1
 
-    log.info("Stopped after %d cycle(s) — total candidates=%d reports=%d", cycle, total_candidates, len(total_reports))
+    log.info("Stopped after %d cycle(s) - total candidates=%d reports=%d", cycle, total_candidates, len(total_reports))

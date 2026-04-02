@@ -20,7 +20,7 @@ def setup(verbose: bool = False) -> logging.Logger:
 
     level = logging.DEBUG if verbose else logging.INFO
 
-    # Configure only the gitdorker logger — do not touch the root logger
+    # Configure only the gitdorker logger - do not touch the root logger
     logger = logging.getLogger("gitdorker")
     logger.setLevel(level)
     logger.propagate = False

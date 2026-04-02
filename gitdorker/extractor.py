@@ -44,7 +44,7 @@ _PATTERNS: dict[str, re.Pattern[str]] = {
     "nvidia":     re.compile(r"nvapi-[a-zA-Z0-9_\-]{55}"),
     # Cerebras: csk- + 32 alphanum
     "cerebras":   re.compile(r"csk-[a-zA-Z0-9]{32}"),
-    # GitHub PAT (classic + fine-grained) — kept as useful signal
+    # GitHub PAT (classic + fine-grained) - kept as useful signal
     "github":     re.compile(
         r"(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{36}"
         r"|github_pat_[A-Za-z0-9_]{82}"
@@ -142,7 +142,7 @@ def _is_placeholder(value: str, context_line: str = "") -> bool:
     if len(set(payload)) / len(payload) < _MIN_UNIQUE_CHAR_RATIO:
         return True
 
-    # 4. Low Shannon entropy — catches repetition patterns like "abcabcabc"
+    # 4. Low Shannon entropy - catches repetition patterns like "abcabcabc"
     if _shannon_entropy(payload) < _MIN_ENTROPY_BITS:
         return True
 

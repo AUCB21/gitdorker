@@ -49,7 +49,7 @@ class GitHubSearchClient:
                 return []
 
             if resp.status_code in (403, 429):
-                # GitHub secondary rate limit — respect Retry-After if present
+                # GitHub secondary rate limit - respect Retry-After if present
                 retry_after = int(
                     resp.headers.get("Retry-After")
                     or resp.headers.get("x-ratelimit-reset", 60)
@@ -59,7 +59,7 @@ class GitHubSearchClient:
                     retry_after = max(0, retry_after - int(time.time()))
                 retry_after = min(retry_after, 120)  # cap at 2 min per retry
                 log.warning(
-                    "GitHub %d on page %d for %r — waiting %ds (attempt %d/%d)",
+                    "GitHub %d on page %d for %r - waiting %ds (attempt %d/%d)",
                     resp.status_code, page, query, retry_after, attempt, _MAX_RETRIES,
                 )
                 time.sleep(retry_after)

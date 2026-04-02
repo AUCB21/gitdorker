@@ -1,6 +1,6 @@
 # gitdorker
 
-GitHub secret scanner — searches public repositories for exposed LLM API keys and generates disclosure reports.
+GitHub secret scanner - searches public repositories for exposed LLM API keys and generates disclosure reports.
 
 ---
 
@@ -18,7 +18,7 @@ Anthropic · OpenAI · Google Gemini · Perplexity · Groq · Replicate · Huggi
 Requires Python 3.13+.
 
 ```bash
-git clone https://github.com/<you>/gitdorker
+git clone https://github.com/AUCB21/gitdorker
 cd gitdorker
 pip install -e .
 ```
@@ -26,13 +26,13 @@ pip install -e .
 Set your GitHub token (needs `public_repo` read scope) in any of these ways:
 
 ```bash
-# Option A — .env file (recommended)
+# Option A - .env file (recommended)
 echo "GITHUB_TOKEN=ghp_..." > .env
 
-# Option B — environment variable
+# Option B - environment variable
 export GITHUB_TOKEN=ghp_...
 
-# Option C — enter it interactively when prompted
+# Option C - enter it interactively when prompted
 ```
 
 ---
@@ -48,12 +48,12 @@ gitdorker
 Launches a guided 6-step setup:
 
 ```
-Step 1 — GitHub Token       detect env token or enter manually
-Step 2 — Search Source      dorks file or single query
-Step 3 — Dorks File         path to JSON (defaults to dorks.json)
-Step 4 — Output dir         where to write reports (default: reports/)
-Step 5 — Limits             max results per dork (default: all, cap 1000)
-Step 6 — Loop Mode          continuous scanning with configurable delay
+Step 1 - GitHub Token       detect env token or enter manually
+Step 2 - Search Source      dorks file or single query
+Step 3 - Dorks File         path to JSON (defaults to dorks.json)
+Step 4 - Output dir         where to write reports (default: reports/)
+Step 5 - Limits             max results per dork (default: all, cap 1000)
+Step 6 - Loop Mode          continuous scanning with configurable delay
 ```
 
 ### Headless / scripted
@@ -90,7 +90,7 @@ gitdorker --dorks-file dorks.json --max-results 100 --verbose
 
 ## Output
 
-**Reports** — written to `reports/` as Markdown files, one per unique repo:
+**Reports** - written to `reports/` as Markdown files, one per unique repo:
 
 ```
 reports/
@@ -99,7 +99,7 @@ reports/
 
 Each report includes: repository URL, file path, matched content, extracted credential (redacted in display, present for disclosure), and remediation steps.
 
-**Logs** — written to `logs/gitdorker_YYYYMMDD_HHMMSS.log` on every run.
+**Logs** - written to `logs/gitdorker_YYYYMMDD_HHMMSS.log` on every run.
 
 ---
 
@@ -124,7 +124,7 @@ Each report includes: repository URL, file path, matched content, extracted cred
 
 ## Web UI
 
-A standalone HTML key verifier is included at `web/index.html` — open it directly in a browser (no server needed). Paste or batch-load keys, run a prompt against all supported models, and save working keys to a local vault.
+A standalone HTML key verifier is included at `web/index.html` - open it directly in a browser (no server needed). Paste or batch-load keys, run a prompt against all supported models, and save working keys to a local vault.
 
 ---
 

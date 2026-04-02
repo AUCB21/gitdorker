@@ -355,7 +355,7 @@
       dzClear.classList.remove('hidden');
       if (batchKeys.length > 0) { apikeyEl.value = batchKeys[0]; updateBadge(batchKeys[0]); }
     } catch {
-      dzLabel.textContent = 'Invalid JSON — try again';
+      dzLabel.textContent = 'Invalid JSON - try again';
       dzChip.classList.add('hidden');
     }
   }
@@ -582,8 +582,8 @@
         const succeeded = await runKey(apiKey, prompt, maxTok, pillRow);
 
         if (succeeded === null) {
-          // All models were rate-limited — inconclusive, keep row with warning
-          headerLabel.innerHTML += ' <span class="text-yellow-400 font-normal normal-case tracking-normal">⚠ Rate limited — rerun to validate</span>';
+          // All models were rate-limited - inconclusive, keep row with warning
+          headerLabel.innerHTML += ' <span class="text-yellow-400 font-normal normal-case tracking-normal">⚠ Rate limited - rerun to validate</span>';
         } else if (succeeded.length === 0) {
           headerRow.remove();
           pillRow.remove();
@@ -676,7 +676,7 @@
         <td class="px-4 py-3"><span class="badge badge-${escapeHtml(entry.provider)}">${escapeHtml(PROVIDERS[entry.provider]?.label ?? entry.provider)}</span></td>
         <td class="px-4 py-3 font-mono text-xs text-neutral-300">${escapeHtml(entry.key.slice(0, 20))}…${escapeHtml(entry.key.slice(-4))}</td>
         <td class="px-4 py-3"><div class="flex flex-wrap gap-1">${(entry.models ?? []).map(m => `<span class="text-[10px] bg-neutral-800 text-neutral-400 px-1.5 py-0.5 rounded font-mono">${escapeHtml(m)}</span>`).join('')}</div></td>
-        <td class="px-4 py-3 text-[10px] text-neutral-600 font-mono">${entry.verifiedAt ? new Date(entry.verifiedAt).toLocaleDateString() : '—'}</td>
+        <td class="px-4 py-3 text-[10px] text-neutral-600 font-mono">${entry.verifiedAt ? new Date(entry.verifiedAt).toLocaleDateString() : '-'}</td>
         <td class="px-4 py-3">
           <div class="flex gap-2 justify-end">
             <button type="button" data-copy="${escapeHtml(entry.key)}" class="text-[10px] px-2 py-1 bg-neutral-800 hover:bg-neutral-700 text-neutral-400 rounded transition-colors font-bold">Copy</button>
