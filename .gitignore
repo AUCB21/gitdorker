@@ -1,5 +1,10 @@
 # Claude Code
 .claude/
+CLAUDE.md
+
+# Project-local files
+dorks.json
+project_plan.md
 
 # Environment
 .env
@@ -21,7 +26,6 @@ logs/
 *.log
 reports/
 found_keys/
-outputs_v1/
 
 # Key vault data (stays local only)
 web/keys.json

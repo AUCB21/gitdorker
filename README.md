@@ -131,11 +131,3 @@ A standalone HTML key verifier is included at `web/index.html` — open it direc
 ## Legal
 
 This tool is intended for **authorized security research and responsible disclosure** only. Only scan repositories you are permitted to test. Report any valid credentials you find to the affected party before public disclosure. Misuse may violate GitHub's Terms of Service and applicable law.
-
-## Commits and pushes
-
-Don't cite anthropic, openai, google, huggingface, etc. in commits or pushes. It's a bad practice and can lead to security issues.
-Always verify .gitignore files and possible secret leaks
-Keep commit msgs short and concise
-Don't add this line or any related to commit msgs: "
-Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com> EOF"
